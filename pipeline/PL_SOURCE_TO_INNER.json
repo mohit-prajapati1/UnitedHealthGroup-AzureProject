@@ -110,7 +110,14 @@
 				"outputs": [
 					{
 						"referenceName": "ds_adls_Parquet1",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": "Landing",
+							"Folder": {
+								"value": "@concat(\n    activity('READ ALL TABLE DETAILS').output.firstRow.source_system,\n    '/',\n    activity('READ ALL TABLE DETAILS').output.firstRow.source_table_name,\n    '/',\n    variables('start_time')\n)",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			}
