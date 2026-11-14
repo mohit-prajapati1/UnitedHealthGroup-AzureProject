@@ -50,19 +50,24 @@
 					},
 					"activities": [
 						{
-							"name": "Test",
-							"type": "SetVariable",
+							"name": "Ingestion from Source to silver",
+							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"policy": {
-								"secureOutput": false,
 								"secureInput": false
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "table_id",
-								"value": {
-									"value": "@item().table_id",
-									"type": "Expression"
+								"pipeline": {
+									"referenceName": "PL_SOURCE_TO_INNER",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"table_id": {
+										"value": "@item()",
+										"type": "Expression"
+									}
 								}
 							}
 						}

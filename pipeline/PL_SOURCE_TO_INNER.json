@@ -32,7 +32,7 @@
 				}
 			},
 			{
-				"name": "start_time",
+				"name": "SET START TIME",
 				"type": "SetVariable",
 				"dependsOn": [],
 				"policy": {
@@ -59,7 +59,7 @@
 						]
 					},
 					{
-						"activity": "start_time",
+						"activity": "SET START TIME",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -77,7 +77,7 @@
 					"source": {
 						"type": "PostgreSqlV2Source",
 						"query": {
-							"value": "select * from Public.'@{activity('READ ALL TABLE DETAILS').output.firstRow.source_table_name}'",
+							"value": "@concat('SELECT * FROM public.\"', activity('READ ALL TABLE DETAILS').output.firstRow.source_table_name, '\"')",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00"
@@ -112,7 +112,7 @@
 						"referenceName": "ds_adls_Parquet1",
 						"type": "DatasetReference",
 						"parameters": {
-							"Container": "Landing",
+							"Container": "landing",
 							"Folder": {
 								"value": "@concat(\n    activity('READ ALL TABLE DETAILS').output.firstRow.source_system,\n    '/',\n    activity('READ ALL TABLE DETAILS').output.firstRow.source_table_name,\n    '/',\n    variables('start_time')\n)",
 								"type": "Expression"
@@ -120,6 +120,84 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Landing to Bronze",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "SOURCE TO LANDING INGESTION",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/unitedhealthgroup-repo/UnitedHealthGroup-adb/nb_landing_to_bronze",
+					"baseParameters": {
+						"source_system": {
+							"value": "@activity('READ ALL TABLE DETAILS').output.firstRow.source_system",
+							"type": "Expression"
+						},
+						"source_table_name": {
+							"value": "@activity('READ ALL TABLE DETAILS').output.firstRow.bronze_table_name\r\n\r\n",
+							"type": "Expression"
+						},
+						"landing_timestamp": {
+							"value": "@variables('start_time')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Bronze to Silver",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Landing to Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/unitedhealthgroup-repo/UnitedHealthGroup-adb/nb_bronze_to_silver",
+					"baseParameters": {
+						"table_name": {
+							"value": "@activity('READ ALL TABLE DETAILS').output.firstRow.silver_table_name\n\n",
+							"type": "Expression"
+						},
+						"landing_timestamp": {
+							"value": "@variables('start_time')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {

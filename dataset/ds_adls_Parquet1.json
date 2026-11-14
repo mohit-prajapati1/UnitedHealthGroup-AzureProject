@@ -18,7 +18,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileSystem": "Landing"
+				"folderPath": "@dataset().Folder",
+				"fileSystem": "@dataset().Container"
 			},
 			"compressionCodec": "snappy"
 		},
