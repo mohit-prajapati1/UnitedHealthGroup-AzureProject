@@ -48,6 +48,7 @@
 						"value": "@activity('READ SOURCE TABLE LIST').output.value",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Ingestion from Source to silver",
@@ -72,7 +73,11 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"table_id": {
-										"value": "@item()",
+										"value": "@item().table_id",
+										"type": "Expression"
+									},
+									"run_id": {
+										"value": "@pipeline().parameters.run_id",
 										"type": "Expression"
 									}
 								}
@@ -99,7 +104,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "INSERT INTO ctrl.audit_log(adf_run_id,table_id,stage,status,start_time)\nVALUES(pipeline().parameters.run_id),@{item().table_id},'SOURCE_TO_SILVER','IN_PROGRESS',SYSUTCDATETIME ())",
+											"value": "@concat(\n    'INSERT INTO ctrl.audit_log (adf_run_id, table_id, stage, status, start_time) VALUES (',\n    '''', pipeline().parameters.run_id, ''',',\n    string(item().table_id), ',',\n    '''SOURCE_TO_SILVER'',',\n    '''IN_PROGRESS'',',\n    'SYSUTCDATETIME())'\n)",
 											"type": "Expression"
 										}
 									}
