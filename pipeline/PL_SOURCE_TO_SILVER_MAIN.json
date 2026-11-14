@@ -140,7 +140,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "update ctrl.audit_log\nset status = 'Failed',end_time =SYSUTCDATETIME()\nwhere run_id = pipeline().parameters.run_id and table_id = @{item().table_id}",
+											"value": "@concat(\n    'UPDATE ctrl.audit_log ',\n    'SET status = ''Failed'', ',\n    'end_time = SYSUTCDATETIME() ',\n    'WHERE run_id = ''',\n    pipeline().parameters.run_id,\n    ''' AND table_id = ',\n    string(item().table_id)\n)",
 											"type": "Expression"
 										}
 									}
